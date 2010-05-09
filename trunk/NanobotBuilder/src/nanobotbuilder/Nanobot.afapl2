@@ -1,4 +1,15 @@
 IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
+IMPORT com.agentfactory.afapl2.core.agent.ServiceSupport;
+
+PERCEPTOR nanobotPerceptor {
+    CLASS perceptor.NanobotPerceptor;
+}
+
+ACTION needTask {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.NeedTask;
+}
 
 ACTION gotTask(?name, ?x, ?y) {
     PRECONDITION BELIEF(true);
@@ -12,11 +23,19 @@ ACTION finished(?name) {
     CLASS actuator.Finished;
 }
 
-// Initial belief
-BELIEF(state(started));
+// Bind to the world service
+COMMIT(?self, ?now, BELIEF(true), bindToService(world));
+
+// Initial state
+BELIEF(state(needTask));
+
+// Persist our needing a task until we've joined to world
+BELIEF(state(needTask)) & !BELIEF(position(?x, ?y)) =>
+COMMIT(?self, ?now, BELIEF(true), needTask);
 
 // If we need a task then we ask for one
-BELIEF(needTask(?name, ?addr)) &
+BELIEF(state(needTask)) &
+BELIEF(supervisor(?name, ?addr)) &
 BELIEF(position(?x, ?y)) &
 BELIEF(agentType(?type)) =>
 COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));
@@ -34,4 +53,3 @@ BELIEF(fipaMessage(request, sender(?name, ?addr), taskUnavailable)) &
 BELIEF(position(?x, ?y)) &
 BELIEF(agentType(?type)) =>
 COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));
-

@@ -62,6 +62,20 @@ public class Blueprint extends Module {
         }
     }
 
+    public void finishedStep(String agentType, int x, int y) {
+
+        List<Blueprint.BlueprintStepHolder> phase = phases.get(currentPhase);
+        for (BlueprintStepHolder stepHolder : phase) {
+            Point agentPosition = new Point(x,y);
+            Point stepPosition = new Point(Integer.parseInt(stepHolder.step.xPosition),
+                                           Integer.parseInt(stepHolder.step.yPosition));
+            if (agentPosition.equals(stepPosition)) {
+                stepHolder.state = BlueprintStepHolder.STEP_DONE;
+                return;
+            }
+        }
+    }
+
     public BlueprintStep getBlueprintStep(String agentType, int x, int y) {
 
         boolean isCurrentPhaseComplete = true;

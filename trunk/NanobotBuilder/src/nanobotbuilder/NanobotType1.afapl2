@@ -1,4 +1,2 @@
 IMPORT nanobotbuilder.Nanobot;
-
 ALWAYS(BELIEF(agentType(1)));
-ALWAYS(BELIEF(position(9,9)));

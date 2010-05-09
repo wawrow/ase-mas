@@ -16,6 +16,8 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import service.WorldService;
+
 public class Main {
     public static void main(String[] args) {
         // Create a new agent platform with a basic name and domain
@@ -37,6 +39,12 @@ public class Main {
 
         PlatformServiceManager manager = ((PlatformServiceManager) platform.getPlatformServiceManager());
         try {
+            manager.addService(WorldService.class, "world");
+        } catch (NoSuchServiceException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        try {
             props = new Properties();
             props.setProperty("port", "4444");
             manager.addService(HTTPMessageTransportService.class, HTTPMessageTransportService.NAME, 0, props);
@@ -53,14 +61,18 @@ public class Main {
         // agent community can be created...
         AgentManagementService ams = (AgentManagementService) platform.getPlatformServiceManager().getServiceByName(AgentManagementService.NAME);
         try {
-            // 1. Create an agent
-            IAgent agent = ams.createAgent("nanobot1", "nanobotbuilder/NanobotType1.agent");
-            agent.initialise("BELIEF(needTask(supervisor, addresses(http://localhost:4444/acc)))");
-            agent = ams.createAgent("supervisor", "nanobotbuilder/Supervisor.agent");
-            // 2. Give it initial beliefs / goals
-            // agent.initialise("BELIEF(happy)");
-            // 3. Resume the agent (start it)
-            // ams.resumeAgent("fergus");
+            // Create a bunch of nanobot agents
+            int numberOfAgents = 3;
+            for (int i=1; i<=numberOfAgents; i++) {
+                // naming of agent is important "n:name" where the n tells the world service
+                // what concrete nanobot class to create
+                IAgent agent = ams.createAgent("1:nanobot" + i, "nanobotbuilder/NanobotType1.agent");
+                agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
+            }
+
+            // Create the single supervisor
+            ams.createAgent("supervisor", "nanobotbuilder/Supervisor.agent");
+            
         } catch (NoSuchArchitectureException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (DuplicateAgentNameException ex) {

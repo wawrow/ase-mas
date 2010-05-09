@@ -7,6 +7,12 @@ ACTION getTask(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
     CLASS actuator.GetTask;
 }
 
+ACTION finishedTask(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.FinishedTask;
+}
+
 // A nanobot agent has asked for a task
 BELIEF(fipaMessage(request, sender(?name, ?addr), getTask(?agentType, ?x, ?y))) =>
 COMMIT(?self, ?now, BELIEF(true),
@@ -18,4 +24,8 @@ COMMIT(?self, ?now, BELIEF(true),
         )
     )
 );
+
+// A nanobot agent has finished its task
+BELIEF(fipaMessage(request, sender(?name, ?addr), finishedTask(?agentType, ?x, ?y))) =>
+COMMIT(?self, ?now, BELIEF(true), finishedTask(blueprint, ?name, ?agentType, ?x, ?y));
 
