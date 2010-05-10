@@ -48,5 +48,4 @@ public class NanobotWorld {
     public List<FOS> getPercepts(String name) {        
         return grid.getPercepts(nanobotMap.get(name));
     }
-
 }

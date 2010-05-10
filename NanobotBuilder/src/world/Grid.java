@@ -25,11 +25,11 @@ public class Grid {
 
     public void addNanobot(AbstractNanobot nanobot) {
         // Put it in first available position
-        GridCell gridLocation;
+        GridCell gridCell;
         GridIterator iterator = new GridIterator(grid);
-        while ((gridLocation = iterator.next()) != null) {
-            if (!gridLocation.isOccupied()) {
-                gridLocation.setOccupant(nanobot, this);
+        while ((gridCell = iterator.next()) != null) {
+            if (!gridCell.isOccupied()) {
+                gridCell.setOccupant(nanobot, this);
                 break;
             }
         }
