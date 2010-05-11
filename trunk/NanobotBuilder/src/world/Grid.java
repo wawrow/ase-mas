@@ -5,8 +5,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Observable;
 
-public class Grid {
+public class Grid extends Observable {
 
     private final String TOP = "top";
     private final String TOPLEFT = "topleft";
@@ -19,6 +20,11 @@ public class Grid {
 
     private GridCell[][] grid;
     private Map<AbstractNanobot, GridCell> nanobotPositionMap = new HashMap<AbstractNanobot, GridCell>();
+
+    public Map<AbstractNanobot, GridCell> getNanobotPositionMap(){
+        return nanobotPositionMap;
+    }
+
     private int width;
     private int height;
 
@@ -34,6 +40,7 @@ public class Grid {
     }
 
     public void addNanobot(AbstractNanobot nanobot) {
+        System.out.println("ADDING NANOBOT TO THE SYSTEM. " + this.countObservers());
         // Put it in first available position
         GridCell gridCell;
         GridIterator iterator = new GridIterator(grid);
@@ -43,6 +50,8 @@ public class Grid {
                 break;
             }
         }
+        setChanged();
+        notifyObservers(this);
     }
     
     public boolean moveNanobot(AbstractNanobot nanobot, String target) {
@@ -54,11 +63,17 @@ public class Grid {
         }
         currentCell.setOccupant(null, null);
         newCell.setOccupant(nanobot, this);
+
+        setChanged();
+        notifyObservers(this);
+        
         return true;
     }
 
     public void setNanobotLocation(AbstractNanobot nanobot, GridCell cell) {
         nanobotPositionMap.put(nanobot, cell);
+        setChanged();
+        notifyObservers(this);
     }
 
     private void perceiveNeighbour(int x, int y, String neighbourLabel, List<FOS> percepts) {
