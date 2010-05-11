@@ -41,13 +41,13 @@ public class Grid extends Observable {
             }
         }
         setChanged();
-        notifyObservers();
+        notifyObservers(this);
     }
 
     public void setNanobotLocation(AbstractNanobot nanobot, GridCell cell) {
         nanobotPositionMap.put(nanobot, cell);
         setChanged();
-        notifyObservers();
+        notifyObservers(this);
     }
 
     private void perceiveNeighbour(int x, int y, String neighbourLabel, List<FOS> percepts) {

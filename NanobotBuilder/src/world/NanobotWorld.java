@@ -2,6 +2,7 @@ package world;
 
 import com.agentfactory.logic.lang.FOS;
 import gui.WorldObserver;
+import gui.WorldObserverSwing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -15,15 +16,20 @@ public class NanobotWorld {
     public static final String NANOBOT_TYPE4 = "4";
 
     private Grid grid;
-    private WorldObserver worldObserver;
+    private WorldObserverSwing worldObserver;
     private Map<String, AbstractNanobot> nanobotMap = new HashMap<String, AbstractNanobot>();
     
     public NanobotWorld(int x, int y) {
         grid = new Grid(x, y);
         //TODO this should be refactored to main
-        worldObserver = new WorldObserver();
-        grid.addObserver(worldObserver);
-        //worldObserver.update(grid, this);
+        worldObserver = new WorldObserverSwing();
+        try{
+            worldObserver.Start();
+            grid.addObserver(worldObserver);
+            //worldObserver.update(grid, this);
+        } catch(Exception ex){
+            System.err.println("Failed to initialize gui: " + ex.toString());
+        }
     }
 
     public void addNanobot(String name) {
