@@ -7,6 +7,16 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Grid {
+
+    private final String TOP = "top";
+    private final String TOPLEFT = "topleft";
+    private final String TOPRIGHT = "topright";
+    private final String BOTTOM = "bottom";
+    private final String BOTTOMLEFT = "bottomleft";
+    private final String BOTTOMRIGHT = "bottomright";
+    private final String LEFT = "left";
+    private final String RIGHT = "right";
+
     private GridCell[][] grid;
     private Map<AbstractNanobot, GridCell> nanobotPositionMap = new HashMap<AbstractNanobot, GridCell>();
     private int width;
@@ -34,13 +44,25 @@ public class Grid {
             }
         }
     }
+    
+    public boolean moveNanobot(AbstractNanobot nanobot, String target) {
+
+        GridCell currentCell = nanobotPositionMap.get(nanobot);
+        GridCell newCell = getRelativeCell(currentCell, target);
+        if (newCell == null || newCell.isOccupied()){
+            return false;
+        }
+        currentCell.setOccupant(null, null);
+        newCell.setOccupant(nanobot, this);
+        return true;
+    }
 
     public void setNanobotLocation(AbstractNanobot nanobot, GridCell cell) {
         nanobotPositionMap.put(nanobot, cell);
     }
 
     private void perceiveNeighbour(int x, int y, String neighbourLabel, List<FOS> percepts) {
-        if (x == this.height || x < 0 || y == this.width || y < 0) {
+        if (x == this.width || x < 0 || y == this.height || y < 0) {
             percepts.add(new FOS("blocked(" + neighbourLabel + ")"));
         } else {
             GridCell cell = grid[x][y];
@@ -52,26 +74,54 @@ public class Grid {
             }
         }
     }
-    
+
     public List<FOS> getPercepts(AbstractNanobot nanobot) {
 
         // Perceive our current position
         GridCell gridCell = nanobotPositionMap.get(nanobot);
         List<FOS> percepts = new ArrayList<FOS>();
         percepts.add(new FOS("position(" + gridCell.getX() + ", " + gridCell.getY() + ")"));
- 
+
         // Perceive all the neighbour squares
         int x = gridCell.getX();
         int y = gridCell.getY();
-        perceiveNeighbour(x, y+1, "top", percepts);
-        perceiveNeighbour(x-1, y+1, "topleft", percepts);
-        perceiveNeighbour(x+1, y+1, "topright", percepts);
-        perceiveNeighbour(x, y-1, "bottom", percepts);
-        perceiveNeighbour(x-1, y-1, "bottomleft", percepts);
-        perceiveNeighbour(x+1, y-1, "bottomright", percepts);
-        perceiveNeighbour(x-1, y, "left", percepts);
-        perceiveNeighbour(x+1, y, "right", percepts);
+        perceiveNeighbour(x, y+1, TOP, percepts);
+        perceiveNeighbour(x-1, y+1, TOPLEFT, percepts);
+        perceiveNeighbour(x+1, y+1, TOPRIGHT, percepts);
+        perceiveNeighbour(x, y-1, BOTTOM, percepts);
+        perceiveNeighbour(x-1, y-1, BOTTOMLEFT, percepts);
+        perceiveNeighbour(x+1, y-1, BOTTOMRIGHT, percepts);
+        perceiveNeighbour(x-1, y, LEFT, percepts);
+        perceiveNeighbour(x+1, y, RIGHT, percepts);
 
         return percepts;
+    }
+
+    public GridCell getRelativeCell(GridCell gridCell, String target) {
+ 
+        int x = gridCell.getX();
+        int y = gridCell.getY();
+        if (target.equals(TOP)) {
+            if (y == this.height)
+                return null;
+            return grid[x][y+1];
+        }
+        if (target.equals(BOTTOM)) {
+            if (y == 0)
+                return null;
+            return grid[x][y-1];
+        }
+        if (target.equals(LEFT)) {
+            if (x == 0)
+                return null;
+            return grid[x-1][y];
+        }
+        if (target.equals(RIGHT)) {
+            if (y == this.width)
+                return null;
+            return grid[x+1][y];
+        }
+        else
+            return null;
     }
 }

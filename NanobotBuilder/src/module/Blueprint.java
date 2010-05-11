@@ -80,7 +80,7 @@ public class Blueprint extends Module {
 
         boolean isCurrentPhaseComplete = true;
         List<Blueprint.BlueprintStepHolder> phase = phases.get(currentPhase);
-        if (phase ==  null) {
+        if (phase == null) {
             this.allStepsDone = true;
             return null;
         }

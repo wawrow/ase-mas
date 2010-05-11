@@ -9,8 +9,8 @@ public class GotTask extends Actuator {
         String x = action.argAt(1).toString();
         String y = action.argAt(2).toString();
 
-        adoptBelief("ALWAYS(BELIEF(state(allocated)))");
-        System.out.println("Got new task from " + agentName + " at x=" + x + " y=" + y);
+        adoptBelief("ALWAYS(BELIEF(state(allocated(" + x + "," + y + "))))");
+        System.out.println(agent.getName() + ": got new task from " + agentName + " target=(" + x + "," + y + ")");
         return true;
     }
 }

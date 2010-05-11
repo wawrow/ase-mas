@@ -17,10 +17,28 @@ ACTION gotTask(?name, ?x, ?y) {
     CLASS actuator.GotTask;
 }
 
-ACTION finished(?name) {
+ACTION finishedAcknowledged(?name) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
-    CLASS actuator.Finished;
+    CLASS actuator.FinishedAcknowledged;
+}
+
+ACTION getMovePreferences(?x, ?y, ?targetX, ?targetY) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.GetMovePreferences;
+}
+
+ACTION move(?target) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.Move;
+}
+
+ACTION moveComplete {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.MoveComplete;
 }
 
 // Bind to the world service
@@ -29,7 +47,7 @@ COMMIT(?self, ?now, BELIEF(true), bindToService(world));
 // Initial state
 BELIEF(state(needTask));
 
-// Persist our needing a task until we've joined to world
+// Persist our needing a task until we've got a position in the world
 BELIEF(state(needTask)) & !BELIEF(position(?x, ?y)) =>
 COMMIT(?self, ?now, BELIEF(true), needTask);
 
@@ -40,16 +58,57 @@ BELIEF(position(?x, ?y)) &
 BELIEF(agentType(?type)) =>
 COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));
 
-// If we are given a task we commit to achieving it
+// If we are given a task we persist it (with an actuator)
 BELIEF(fipaMessage(request, sender(?name, ?addr), task(?x, ?y))) =>
 COMMIT(?self, ?now, BELIEF(true), gotTask(?name, ?x, ?y));
 
 // If we are told there are no tasks left then we are finished
 BELIEF(fipaMessage(request, sender(?name, ?addr), allTasksComplete)) =>
-COMMIT(?self, ?now, BELIEF(true), finished(?name));
+COMMIT(?self, ?now, BELIEF(true), finishedAcknowledged(?name));
 
 // If we are told there is no task available, we commit to asking again
 BELIEF(fipaMessage(request, sender(?name, ?addr), taskUnavailable)) &
 BELIEF(position(?x, ?y)) &
 BELIEF(agentType(?type)) =>
-COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));
+COMMIT(?self, ?now, BELIEF(true), 
+    SEQ(DELAY(iteration(5)),
+        request(agentID(?name, ?addr), getTask(?type, ?x, ?y))));
+
+// If we have an allocated task and we are at our target then we are finished
+BELIEF(state(allocated(?targetX, ?targetY))) &
+BELIEF(supervisor(?name, ?addr)) &
+!BELIEF(state(finishedAcknowledged)) &
+BELIEF(agentType(?type)) &
+BELIEF(position(?targetX, ?targetY)) =>
+COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), finishedTask(?type, ?targetX, ?targetY)));
+
+// If we get the finished acknowledged message from supervisor then we can stop
+BELIEF(fipaMessage(request, sender(?name, ?addr), finishedAcknowledged)) =>
+COMMIT(?self, ?now, BELIEF(true), finishedAcknowledged(?name));
+
+// If we have an allocated task then get our preferences for the next move
+BELIEF(state(allocated(?targetX, ?targetY))) &
+BELIEF(position(?x, ?y)) &
+!BELIEF(state(finished)) &
+!BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) =>
+COMMIT(?self, ?now, BELIEF(true), getMovePreferences(?x, ?y, ?targetX, ?targetY));
+
+// If we have move preferences then choose one based on what's possible
+BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) &
+!BELIEF(state(finished))=>
+COMMIT(?self, ?now, BELIEF(true),
+    ATTEMPT(move(?first),
+            moveComplete,
+            ATTEMPT(move(?second),
+                    moveComplete,
+                    ATTEMPT(move(?third),
+                            moveComplete,
+                            ATTEMPT(move(?fourth),
+                                moveComplete,
+                                moveComplete
+                            )
+                    )
+            )
+    )
+);
+

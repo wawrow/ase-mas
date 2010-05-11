@@ -26,11 +26,12 @@ public class GridCell {
     public void setOccupant(AbstractNanobot nanobot, Grid grid) {
         if (nanobot != null) {
             System.out.println("Nanobot " + nanobot.getName() + " in cell (" + x + "," + y + ")");
+            this.nanobot = nanobot;
+            grid.setNanobotLocation(nanobot, this);
         } else {
             System.out.println("cell (" + x + "," + y + ") is now empty");
+            this.nanobot = null;
         }
-        this.nanobot = nanobot;
-        grid.setNanobotLocation(nanobot, this);
     }
 
     public AbstractNanobot getOccupant() {

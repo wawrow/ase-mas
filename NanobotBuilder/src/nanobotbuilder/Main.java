@@ -33,7 +33,7 @@ public class Main {
         // whose source code is identified by a .agent extension)
         AFAPL2ArchitectureFactory factory = new AFAPL2ArchitectureFactory();
         Properties props = new Properties();
-        props.setProperty("TIMESLICE", "100");
+        props.setProperty("TIMESLICE", "50");
         factory.configure(props);
         platform.getArchitectureService().registerArchitectureFactory(factory);
 
@@ -61,12 +61,26 @@ public class Main {
         // agent community can be created...
         AgentManagementService ams = (AgentManagementService) platform.getPlatformServiceManager().getServiceByName(AgentManagementService.NAME);
         try {
-            // Create a bunch of nanobot agents
+            // Create a bunch of nanobot agents, 3 of each type (3 types)
             int numberOfAgents = 3;
+            for (int i=1; i<=numberOfAgents; i++) {
+                // naming of agent is important "n#name" where the n tells the world service
+                // what concrete nanobot class to create
+                IAgent agent = ams.createAgent("1#nanobot" + i, "nanobotbuilder/NanobotType1.agent");
+                agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
+            }
+
             for (int i=1; i<=numberOfAgents; i++) {
                 // naming of agent is important "n:name" where the n tells the world service
                 // what concrete nanobot class to create
-                IAgent agent = ams.createAgent("1:nanobot" + i, "nanobotbuilder/NanobotType1.agent");
+                IAgent agent = ams.createAgent("2#nanobot" + i, "nanobotbuilder/NanobotType2.agent");
+                agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
+            }
+
+            for (int i=1; i<=numberOfAgents; i++) {
+                // naming of agent is important "n:name" where the n tells the world service
+                // what concrete nanobot class to create
+                IAgent agent = ams.createAgent("3#nanobot" + i, "nanobotbuilder/NanobotType3.agent");
                 agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
             }
 
