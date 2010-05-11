@@ -1,0 +1,55 @@
+IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
+IMPORT com.agentfactory.afapl2.core.agent.ServiceSupport;
+
+PERCEPTOR nanobotPerceptor {
+    CLASS perceptor.NanobotPerceptor;
+}
+
+ACTION needTask {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.NeedTask;
+}
+
+ACTION gotTask(?name, ?x, ?y) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.GotTask;
+}
+
+ACTION finished(?name) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.Finished;
+}
+
+// Bind to the world service
+COMMIT(?self, ?now, BELIEF(true), bindToService(world));
+
+// Initial state
+BELIEF(state(needTask));
+
+// Persist our needing a task until we've joined to world
+BELIEF(state(needTask)) & !BELIEF(position(?x, ?y)) =>
+COMMIT(?self, ?now, BELIEF(true), needTask);
+
+// If we need a task then we ask for one
+BELIEF(state(needTask)) &
+BELIEF(supervisor(?name, ?addr)) &
+BELIEF(position(?x, ?y)) &
+BELIEF(agentType(?type)) =>
+COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));
+
+// If we are given a task we commit to achieving it
+BELIEF(fipaMessage(request, sender(?name, ?addr), task(?x, ?y))) =>
+COMMIT(?self, ?now, BELIEF(true), gotTask(?name, ?x, ?y));
+
+// If we are told there are no tasks left then we are finished
+BELIEF(fipaMessage(request, sender(?name, ?addr), allTasksComplete)) =>
+COMMIT(?self, ?now, BELIEF(true), finished(?name));
+
+// If we are told there is no task available, we commit to asking again
+BELIEF(fipaMessage(request, sender(?name, ?addr), taskUnavailable)) &
+BELIEF(position(?x, ?y)) &
+BELIEF(agentType(?type)) =>
+COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));

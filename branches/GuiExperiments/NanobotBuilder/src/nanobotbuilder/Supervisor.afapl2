@@ -1,0 +1,31 @@
+IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
+LOAD_MODULE blueprint module.Blueprint;
+
+ACTION getTask(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.GetTask;
+}
+
+ACTION finishedTask(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.FinishedTask;
+}
+
+// A nanobot agent has asked for a task
+BELIEF(fipaMessage(request, sender(?name, ?addr), getTask(?agentType, ?x, ?y))) =>
+COMMIT(?self, ?now, BELIEF(true),
+    PAR(getTask(blueprint, ?name, ?agentType, ?x, ?y),
+        OR(
+            DO_WHEN(BELIEF(gotTask(?name, ?newX, ?newY)), request(agentID(?name, ?addr), task(?newX, ?newY))),
+            DO_WHEN(BELIEF(taskUnavailable(?name)), request(agentID(?name, ?addr), taskUnavailable)),
+            DO_WHEN(BELIEF(allTasksComplete(?name)), request(agentID(?name, ?addr), allTasksComplete))
+        )
+    )
+);
+
+// A nanobot agent has finished its task
+BELIEF(fipaMessage(request, sender(?name, ?addr), finishedTask(?agentType, ?x, ?y))) =>
+COMMIT(?self, ?now, BELIEF(true), finishedTask(blueprint, ?name, ?agentType, ?x, ?y));
+
