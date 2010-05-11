@@ -28,6 +28,10 @@ public class WorldService extends AbstractPlatformService {
         return nanobotWorld.getPercepts(agent.getName());
     }
 
+    public boolean move(IAgent agent, String target) {
+        return nanobotWorld.move(agent.getName(), target);
+    }
+
     @Override
     public void onUnbind(IAgent agent) {
     }

@@ -27,5 +27,7 @@ COMMIT(?self, ?now, BELIEF(true),
 
 // A nanobot agent has finished its task
 BELIEF(fipaMessage(request, sender(?name, ?addr), finishedTask(?agentType, ?x, ?y))) =>
-COMMIT(?self, ?now, BELIEF(true), finishedTask(blueprint, ?name, ?agentType, ?x, ?y));
+COMMIT(?self, ?now, BELIEF(true), 
+    SEQ(finishedTask(blueprint, ?name, ?agentType, ?x, ?y),
+        request(agentID(?name, ?addr), finishedAcknowledged)));
 

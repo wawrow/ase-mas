@@ -13,7 +13,7 @@ public class GetTask extends Actuator {
         String x = action.argAt(3).toString();
         String y = action.argAt(4).toString();
 
-        System.out.println("GetTask: name=" + agentName + " type=" + agentType + " x=" + x + " y=" + y);
+        System.out.println(agent.getName() + ": received getTask request from " + agentName + " currently at (" + x + "," + y + ")");
 
         Blueprint blueprint = (Blueprint)this.getModuleByName(blueprintName);
         BlueprintStep step = blueprint.getBlueprintStep(agentType,

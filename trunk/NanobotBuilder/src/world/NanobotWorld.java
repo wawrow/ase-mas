@@ -11,7 +11,6 @@ public class NanobotWorld {
     public static final String NANOBOT_TYPE1 = "1";
     public static final String NANOBOT_TYPE2 = "2";
     public static final String NANOBOT_TYPE3 = "3";
-    public static final String NANOBOT_TYPE4 = "4";
 
     private Grid grid;
     private Map<String, AbstractNanobot> nanobotMap = new HashMap<String, AbstractNanobot>();
@@ -28,7 +27,7 @@ public class NanobotWorld {
     }
 
     private AbstractNanobot createNanobot(String name) {
-        StringTokenizer st = new StringTokenizer(name, ":");
+        StringTokenizer st = new StringTokenizer(name, "#");
         String type = st.nextToken();
 
         if (type.equals(NANOBOT_TYPE1)) {
@@ -37,8 +36,6 @@ public class NanobotWorld {
             return new NanobotType2(name);
         } else if (type.equals(NANOBOT_TYPE3)) {
             return new NanobotType3(name);
-        } else if (type.equals(NANOBOT_TYPE4)) {
-            return new NanobotType4(name);
         } else {
             // Just default to one type of nanobot
             return new NanobotType1(name);
@@ -48,4 +45,9 @@ public class NanobotWorld {
     public List<FOS> getPercepts(String name) {        
         return grid.getPercepts(nanobotMap.get(name));
     }
+
+    public boolean move(String name, String target) {
+        return grid.moveNanobot(nanobotMap.get(name), target);
+    }
+
 }

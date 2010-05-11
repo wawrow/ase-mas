@@ -1,0 +1,2 @@
+IMPORT nanobotbuilder.Nanobot;
+ALWAYS(BELIEF(agentType(2)));

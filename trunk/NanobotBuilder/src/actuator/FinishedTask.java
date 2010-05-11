@@ -12,7 +12,7 @@ public class FinishedTask extends Actuator {
         String x = action.argAt(3).toString();
         String y = action.argAt(4).toString();
 
-        System.out.println("FinishedTask: name=" + agentName + " type=" + agentType + " x=" + x + " y=" + y);
+        System.out.println(agent.getName() + ": received finishedTask notification from " + agentName + " at (" + x + "," + y + ")");
 
         Blueprint blueprint = (Blueprint)this.getModuleByName(blueprintName);
         blueprint.finishedStep(agentType, Integer.parseInt(x), Integer.parseInt(y));
