@@ -35,10 +35,28 @@ ACTION move(?target) {
     CLASS actuator.Move;
 }
 
+ACTION visited(?x, ?y) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.Visited;
+}
+
+ACTION revisited(?count, ?maxCount) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.Revisited;
+}
+
 ACTION moveComplete {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
     CLASS actuator.MoveComplete;
+}
+
+ACTION moveNotMade {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.MoveNotMade;
 }
 
 // Bind to the world service
@@ -46,6 +64,7 @@ COMMIT(?self, ?now, BELIEF(true), bindToService(world));
 
 // Initial state
 BELIEF(state(needTask));
+ALWAYS(BELIEF(maxRevisitedCount(20)));
 
 // Persist our needing a task until we've got a position in the world
 BELIEF(state(needTask)) & !BELIEF(position(?x, ?y)) =>
@@ -93,9 +112,23 @@ BELIEF(position(?x, ?y)) &
 !BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) =>
 COMMIT(?self, ?now, BELIEF(true), getMovePreferences(?x, ?y, ?targetX, ?targetY));
 
+// Persist record of any square visited
+BELIEF(position(?x, ?y)) &
+!BELIEF(visited(?x, ?y)) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true), visited(?x, ?y));
+
+// Keep track of how many consecutive moves are just revisiting an old square
+BELIEF(position(?x, ?y)) &
+BELIEF(visited(?x, ?y)) &
+BELIEF(revisitedCount(?count)) &
+BELIEF(maxRevisitedCount(?maxCount)) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true), revisited(?count, ?maxCount));
+
 // If we have move preferences then choose one based on what's possible
 BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) &
-!BELIEF(state(finished))=>
+!BELIEF(state(finished)) =>
 COMMIT(?self, ?now, BELIEF(true),
     ATTEMPT(move(?first),
             moveComplete,
@@ -105,7 +138,7 @@ COMMIT(?self, ?now, BELIEF(true),
                             moveComplete,
                             ATTEMPT(move(?fourth),
                                 moveComplete,
-                                moveComplete
+                                moveNotMade
                             )
                     )
             )

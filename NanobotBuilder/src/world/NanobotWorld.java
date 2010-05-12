@@ -21,13 +21,12 @@ public class NanobotWorld {
         grid = new Grid(x, y);
         //TODO this should be refactored to main
         worldObserver = new WorldObserverSwing();
-        try{
+        try {
             worldObserver.Start();
             grid.addObserver(worldObserver);
-            //worldObserver.update(grid, this);
         } catch(Exception ex){
             System.err.println("Failed to initialize gui: " + ex.toString());
-    }
+        }
     }
 
     public void addNanobot(String name) {
@@ -53,12 +52,15 @@ public class NanobotWorld {
         }
     }
 
-    public List<FOS> getPercepts(String name) {        
+    public List<FOS> getPercepts(String name) {
         return grid.getPercepts(nanobotMap.get(name));
+    }
+
+    public void setFinished(String name) {
+        nanobotMap.get(name).setFinished();
     }
 
     public boolean move(String name, String target) {
         return grid.moveNanobot(nanobotMap.get(name), target);
     }
-
 }
