@@ -54,10 +54,10 @@ public class Grid extends Observable {
         notifyObservers(this);
     }
     
-    public boolean moveNanobot(AbstractNanobot nanobot, String target) {
+    public boolean moveNanobot(AbstractNanobot nanobot, String direction) {
 
         GridCell currentCell = nanobotPositionMap.get(nanobot);
-        GridCell newCell = getRelativeCell(currentCell, target);
+        GridCell newCell = getRelativeCell(currentCell, direction);
         if (newCell == null || newCell.isOccupied()){
             return false;
         }
@@ -83,7 +83,11 @@ public class Grid extends Observable {
             GridCell cell = grid[x][y];
             if (cell.isOccupied()) {
                 percepts.add(new FOS("blocked(" + neighbourLabel + ")"));
-                percepts.add(new FOS("occupied(" + neighbourLabel + ")"));
+                if (cell.getOccupant().isFinished()) {
+                    percepts.add(new FOS("staticNanobot(" + neighbourLabel + ")"));
+                } else {
+                    percepts.add(new FOS("movingNanobot(" + neighbourLabel + ")"));
+                }
             } else {
                 percepts.add(new FOS("clear(" + neighbourLabel + ")"));
             }

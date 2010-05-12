@@ -11,6 +11,7 @@ public class GetMovePreferences extends Actuator {
     private final String BOTTOM = "bottom";
     private final String LEFT = "left";
     private final String RIGHT = "right";
+    private Random random = new Random();
 
     public boolean act(FOS action) {
 
@@ -66,8 +67,7 @@ public class GetMovePreferences extends Actuator {
 
     private void addRandom(String string1, String string2, ArrayList<String> preferences) {
         // Add 2 strings in random order to a list
-        Random r = new Random();
-        if (r.nextBoolean()) {
+        if (random.nextBoolean()) {
             preferences.add(string1);
             preferences.add(string2);
         } else {
