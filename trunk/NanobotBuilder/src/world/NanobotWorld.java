@@ -1,7 +1,6 @@
 package world;
 
 import com.agentfactory.logic.lang.FOS;
-import gui.WorldObserver;
 import gui.WorldObserverSwing;
 import java.util.Map;
 import java.util.HashMap;

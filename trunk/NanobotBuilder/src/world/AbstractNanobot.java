@@ -10,4 +10,6 @@ public abstract class AbstractNanobot {
     public String getName() {
         return name;
     }
+
+    public abstract int getType();
 }

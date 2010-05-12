@@ -2,7 +2,6 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package gui;
 
 import java.io.IOException;
@@ -15,42 +14,33 @@ import world.AbstractNanobot;
 import world.Grid;
 import world.GridCell;
 
-
 /**
  *
  * @author Wawrzyniec
  */
-public class WorldObserverSwing implements Observer{
+public class WorldObserverSwing implements Observer {
 
     OutputStream stdin = null;
     InputStream stderr = null;
     InputStream stdout = null;
 
     @Override
-    public void update(Observable o, Object arg){
-        Grid grid = (Grid)arg;
+    public void update(Observable o, Object arg) {
+        Grid grid = (Grid) arg;
         panel.worldMap = grid.getNanobotPositionMap();
-//        for(AbstractNanobot anb: grid.getNanobotPositionMap().keySet()){
-            //myFrame.trytopaintsomethingmore();
-            panel.repaint();
-//        }
+        panel.repaint();
     }
-
     JFrame myFrame;
     MyPanel panel;
-    public void Start() throws IOException{
+
+    public void Start() throws IOException {
         panel = new MyPanel();
         myFrame = new JFrame("My Test");
         myFrame.setContentPane(panel);
         myFrame.pack();
         myFrame.setVisible(true);
-/*
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                myFrame.setVisible(true);
-            }
-        });
-  */  }
-    public void Stop(){
+    }
+
+    public void Stop() {
     }
 }
