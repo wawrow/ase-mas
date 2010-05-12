@@ -31,10 +31,10 @@ public class WorldObserverSwing implements Observer {
         panel.repaint();
     }
     JFrame myFrame;
-    MyPanel panel;
+    WorldPanel panel;
 
     public void Start() throws IOException {
-        panel = new MyPanel();
+        panel = new WorldPanel();
         myFrame = new JFrame("My Test");
         myFrame.setContentPane(panel);
         myFrame.pack();
