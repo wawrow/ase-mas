@@ -16,10 +16,10 @@ public class GetTask extends Actuator {
         System.out.println(agent.getName() + ": received getTask request from " + agentName + " currently at (" + x + "," + y + ")");
 
         Blueprint blueprint = (Blueprint)this.getModuleByName(blueprintName);
-        BlueprintStep step = blueprint.getBlueprintStep(agentType,
+        BlueprintStep step = blueprint.allocateBlueprintStep(agentType,
                 Integer.parseInt(x), Integer.parseInt(y));
         if (step == null) {
-            if (blueprint.isAllStepsDone()) {
+            if (blueprint.isAllPhasesDone()) {
                 adoptBelief("BELIEF(allTasksComplete(" + agentName + "))");
             } else {
                 adoptBelief("BELIEF(taskUnavailable(" + agentName + "))");

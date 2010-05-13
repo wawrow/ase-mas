@@ -1,8 +1,8 @@
 package nanobotbuilder;
 
 import com.agentfactory.afapl2.interpreter.AFAPL2ArchitectureFactory;
-import com.agentfactory.agentspotter.AgentSpotter;
-import com.agentfactory.platform.core.AgentCreationException;
+//import com.agentfactory.agentspotter.AgentSpotter;
+//import com.agentfactory.platform.core.AgentCreationException;
 import com.agentfactory.platform.core.DuplicateAgentNameException;
 import com.agentfactory.platform.core.IAgent;
 import com.agentfactory.platform.core.NoSuchArchitectureException;
@@ -35,10 +35,9 @@ public class Main {
         // whose source code is identified by a .agent extension)
         AFAPL2ArchitectureFactory factory = new AFAPL2ArchitectureFactory();
         Properties props = new Properties();
-        props.setProperty("TIMESLICE", "1");
+        props.setProperty("TIMESLICE", "25");
         factory.configure(props);
         platform.getArchitectureService().registerArchitectureFactory(factory);
-
 
         PlatformServiceManager manager = ((PlatformServiceManager) platform.getPlatformServiceManager());
         try {
@@ -55,54 +54,35 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        AgentSpotter profiler = new AgentSpotter(platform);
-        profiler.start();
-
+//        AgentSpotter profiler = new AgentSpotter(platform);
+//        profiler.start();
 
         // Install and start the Agent Factory Debugger
-        Debugger debugger = new Debugger(platform);// new Debugger();
-        //debugger.init(new HashMap<String, String>(), platform);
+        //Debugger debugger = new Debugger(platform);// new Debugger();
+        Debugger debugger = new Debugger();
+        debugger.init(new HashMap<String, String>(), platform);
         debugger.start();
-
         
         // Get a reference to the Agent Management Service so that the default
         // agent community can be created...
         AgentManagementService ams = (AgentManagementService) platform.getPlatformServiceManager().getServiceByName(AgentManagementService.NAME);
         try {
-            // Create a bunch of nanobot agents, 3 of each type (3 types)
-            int numberOfAgents = 9;
-            for (int i=1; i<=numberOfAgents; i++) {
-                // naming of agent is important "n#name" where the n tells the world service
-                // what concrete nanobot class to create
-                IAgent agent = ams.createAgent("1#nanobot" + i, "nanobotbuilder/NanobotType1.agent");
-                agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
+            // Create the single stockManager
+            IAgent agent = ams.createAgent("stockManager", "nanobotbuilder/StockManager.agent");
+            agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
+            agent.bindToPlatformService(AgentManagementService.NAME);
 
-            }
-/*
-            for (int i=1; i<=numberOfAgents; i++) {
-                // naming of agent is important "n:name" where the n tells the world service
-                // what concrete nanobot class to create
-                IAgent agent = ams.createAgent("2#nanobot" + i, "nanobotbuilder/NanobotType2.agent");
-                agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
-            }
-
-            for (int i=1; i<=numberOfAgents; i++) {
-                // naming of agent is important "n:name" where the n tells the world service
-                // what concrete nanobot class to create
-                IAgent agent = ams.createAgent("3#nanobot" + i, "nanobotbuilder/NanobotType3.agent");
-                agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
-            }
-*/
             // Create the single supervisor
-            ams.createAgent("supervisor", "nanobotbuilder/Supervisor.agent");
+            agent = ams.createAgent("supervisor", "nanobotbuilder/Supervisor.agent");
+            agent.initialise("ALWAYS(BELIEF(stockManager(stockManager, addresses(http://localhost:4444/acc))))");
             
         } catch (NoSuchArchitectureException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (DuplicateAgentNameException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (AgentCreationException ex){
-            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+//        catch (AgentCreationException ex){
+//            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 }
