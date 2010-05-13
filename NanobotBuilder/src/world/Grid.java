@@ -39,8 +39,21 @@ public class Grid extends Observable {
         }
     }
 
+    public boolean addWeld(Weld weld, int x, int y) {
+
+        GridCell gridCell = grid[x][y];
+        if (gridCell.isOccupied()) {
+            return false;
+        }
+        gridCell.setOccupant(weld, this);
+
+        setChanged();
+        notifyObservers(this);
+        return true;
+    }
+
     public void addNanobot(AbstractNanobot nanobot) {
-        System.out.println("ADDING NANOBOT TO THE SYSTEM. " + this.countObservers());
+
         // Put it in first available position
         GridCell gridCell;
         GridIterator iterator = new GridIterator(grid);
@@ -70,10 +83,12 @@ public class Grid extends Observable {
         return true;
     }
 
-    public void setNanobotLocation(AbstractNanobot nanobot, GridCell cell) {
-        nanobotPositionMap.put(nanobot, cell);
-        setChanged();
-        notifyObservers(this);
+    public void setObjectLocation(AbstractObject object, GridCell cell) {
+        if (object.isNanobot() == true) {
+            nanobotPositionMap.put((AbstractNanobot)object, cell);
+            setChanged();
+            notifyObservers(this);
+        }
     }
 
     private void perceiveNeighbour(int x, int y, String neighbourLabel, List<FOS> percepts) {

@@ -13,6 +13,7 @@ public class Inventory extends Module {
 
     @Override
     public void init() {
+        System.out.println("Loading inventory");
         try {
             File file = new File(INVENTORY_FILENAME);
             if (file.exists()) {

@@ -24,7 +24,7 @@ public class Main {
     public static void main(String[] args) {
         // Create a new agent platform with a basic name and domain
         DefaultAgentPlatform platform = new DefaultAgentPlatform();
-        platform.setName("test");
+        platform.setName("NanobotBuilder");
         platform.setDomain("ucd.ie");
 
         // Install a scheduling algorithm for executing the agents
@@ -69,12 +69,14 @@ public class Main {
         try {
             // Create the single stockManager
             IAgent agent = ams.createAgent("stockManager", "nanobotbuilder/StockManager.agent");
-            agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
             agent.bindToPlatformService(AgentManagementService.NAME);
+            agent.initialise("ALWAYS(BELIEF(supervisor(supervisor, addresses(http://localhost:4444/acc))))");
+            agent.execute();
 
             // Create the single supervisor
             agent = ams.createAgent("supervisor", "nanobotbuilder/Supervisor.agent");
             agent.initialise("ALWAYS(BELIEF(stockManager(stockManager, addresses(http://localhost:4444/acc))))");
+            agent.execute();
             
         } catch (NoSuchArchitectureException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
