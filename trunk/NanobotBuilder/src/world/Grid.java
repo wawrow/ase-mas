@@ -39,7 +39,8 @@ public class Grid extends Observable {
         }
     }
 
-    public boolean addWeld(Weld weld, int x, int y) {
+    public boolean addWeld(Weld weld, int x, int y, int endpointX1, int endpointY1,
+            int endpointX2, int endpointY2) {
 
         GridCell gridCell = grid[x][y];
         if (gridCell.isOccupied()) {
