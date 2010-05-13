@@ -1,6 +1,20 @@
 IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
 IMPORT com.agentfactory.afapl2.core.agent.ServiceSupport;
 
+ONTOLOGY nanobot {
+    PREDICATE agentType(?type);
+    PREDICATE supervisor(?name, ?address);
+    PREDICATE state(?state);
+    PREDICATE gotTask(?name, ?newX, ?newY);
+    PREDICATE taskUnavailable(?name);
+    PREDICATE allTasksComplete(?name);
+    PREDICATE position(?x, ?y);
+    PREDICATE visited(?x, ?y);
+    PREDICATE revisitedCount(?count);
+    PREDICATE maxRevisitedCount(?count);
+    PREDICATE movePreferences(?first, ?second, ?third, ?fourth);
+}
+
 PERCEPTOR nanobotPerceptor {
     CLASS perceptor.NanobotPerceptor;
 }
