@@ -8,12 +8,8 @@ import module.BlueprintStep;
 public class ReadTask extends Actuator {
     public boolean act(FOS action) {
         String blueprintName = action.argAt(0).toString();
-
         Blueprint blueprint = (Blueprint)this.getModuleByName(blueprintName);        
         BlueprintStep step = blueprint.readNextBlueprintStep();
-        if (step != null) {
-            System.out.println("Read step from blueprint, agentType=" + step.agentType + " stepId=" + step.stepId);
-        }
         if (step == null) {
             if (blueprint.isAllPhasesDeployed()) {
                 adoptBelief("BELIEF(readTaskEndOfFile(true))");
@@ -22,6 +18,7 @@ public class ReadTask extends Actuator {
                 adoptBelief("BELIEF(state(readingBlueprint))");
             }
         } else {
+            System.out.println("Read task from blueprint, agentType=" + step.agentType + " stepId=" + step.stepId);
             adoptBelief("BELIEF(readTaskSuccessful(" + step.agentType + "," + step.stepId + "))");
             adoptBelief("BELIEF(state(readingBlueprint))");
         }

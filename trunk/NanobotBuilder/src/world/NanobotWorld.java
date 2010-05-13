@@ -12,6 +12,7 @@ public class NanobotWorld {
     public static final String NANOBOT_TYPE1 = "1";
     public static final String NANOBOT_TYPE2 = "2";
     public static final String NANOBOT_TYPE3 = "3";
+    private final String WELD_NAME = "weld";
 
     private Grid grid;
     private WorldObserverSwing worldObserver;
@@ -34,6 +35,12 @@ public class NanobotWorld {
         AbstractNanobot nanobot = createNanobot(name);
         nanobotMap.put(name, nanobot);
         grid.addNanobot(nanobot);
+    }
+
+    public void addWeld(int x, int y) {
+        System.out.println("World, putting weld in (" + x + "," + y + ")");
+        Weld weld = new Weld(WELD_NAME);
+        grid.addWeld(weld, x, y);
     }
 
     private AbstractNanobot createNanobot(String name) {

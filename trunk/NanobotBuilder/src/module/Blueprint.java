@@ -36,6 +36,7 @@ public class Blueprint extends Module {
     @Override
     public void init() {
         try {
+            System.out.println("Loading blueprint");
             File file = new File(BLUEPRINT_FILENAME);
             if (file.exists()) {
                 BufferedReader br = new BufferedReader(new FileReader(file));
@@ -75,6 +76,7 @@ public class Blueprint extends Module {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("Loaded blueprint");
     }
 
     public void finishedStep(String agentType, int x, int y) {

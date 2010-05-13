@@ -3,12 +3,12 @@ package world;
 public class GridCell {
     private int x;
     private int y;
-    private AbstractNanobot nanobot = null;
+    private AbstractObject object = null;
 
-    public GridCell(int x, int y, AbstractNanobot nanobot) {
+    public GridCell(int x, int y, AbstractObject object) {
         this.x = x;
         this.y = y;
-        this.nanobot = nanobot;
+        this.object = object;
     }
 
     public int getX(){
@@ -20,21 +20,21 @@ public class GridCell {
     }
 
     public boolean isOccupied() {
-        return this.nanobot != null;
+        return this.object != null;
     }
 
-    public void setOccupant(AbstractNanobot nanobot, Grid grid) {
-        if (nanobot != null) {
-            System.out.println("Nanobot " + nanobot.getName() + " in cell (" + x + "," + y + ")");
-            this.nanobot = nanobot;
-            grid.setNanobotLocation(nanobot, this);
+    public void setOccupant(AbstractObject object, Grid grid) {
+        if (object != null) {
+            System.out.println("Object " + object.getName() + " in cell (" + x + "," + y + ")");
+            this.object = object;
+            grid.setObjectLocation(object, this);
         } else {
             System.out.println("cell (" + x + "," + y + ") is now empty");
-            this.nanobot = null;
+            this.object = null;
         }
     }
 
-    public AbstractNanobot getOccupant() {
-        return this.nanobot;
+    public AbstractObject getOccupant() {
+        return this.object;
     }
 }

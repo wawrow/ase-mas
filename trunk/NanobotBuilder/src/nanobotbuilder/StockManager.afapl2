@@ -1,5 +1,5 @@
 IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
-LOAD_MODULE blueprint module.Inventory;
+LOAD_MODULE inventory module.Inventory;
 
 ONTOLOGY stockManager {
     PREDICATE state(?state);
@@ -8,7 +8,7 @@ ONTOLOGY stockManager {
     PREDICATE nanobotUnavailable(?state);
 }
 
-ACTION allocate(?agentType) {
+ACTION allocate(?inventory, ?agentType) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
     CLASS actuator.AllocateNanobot;
@@ -30,7 +30,7 @@ ACTION deploy(?agentType, ?taskId, ?name, ?address) {
 BELIEF(fipaMessage(request, sender(?name, ?addr), deploy(?agentType, ?taskId))) &
 BELIEF(supervisor(?supervisorName, ?supervisorAddr)) =>
 COMMIT(?self, ?now, BELIEF(true),
-    PAR(allocate(?agentType),
+    PAR(allocate(inventory, ?agentType),
         DO_WHEN(BELIEF(nanobotAllocated(?state)), deploy(?agentType, ?taskId, ?supervisorName, ?supervisorAddr)),
         DO_WHEN(BELIEF(nanobotUnavailable(?state)), allocateFailed(?agentType))
     )
