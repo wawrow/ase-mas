@@ -92,7 +92,7 @@ public class Blueprint extends Module {
                     return;
                 }
             }
-        }
+        } 
     }
 
     public BlueprintStep readNextBlueprintStep() {
@@ -115,6 +115,7 @@ public class Blueprint extends Module {
             }
             if (stepHolder.state == BlueprintStepHolder.STEP_UNALLOCATED) {
                 stepHolder.state = BlueprintStepHolder.STEP_DEPLOYED;
+                System.out.println("readNextBlueprintStep: Deploying from phase=" + currentPhase + " stepid=" + stepHolder.step.stepId);
                 return stepHolder.step;
             }
         }
@@ -130,10 +131,12 @@ public class Blueprint extends Module {
         if (isCurrentPhaseComplete == true) {
             currentPhase++;
             if (laterPhases.isEmpty()) {
+                System.out.println("readNextBlueprintStep: Current phase=" + currentPhase + " - no more phases");
                 this.allPhasesDone = true;
                 return null;
             } else {
                 currentPhase = laterPhases.firstKey();
+                System.out.println("readNextBlueprintStep: New current phase=" + currentPhase);
                 return readNextBlueprintStep();
             }
         }
@@ -142,8 +145,10 @@ public class Blueprint extends Module {
 
     public BlueprintStep allocateBlueprintStep(String agentType, int x, int y) {
 
+        boolean isCurrentPhaseComplete = true;
         List<Blueprint.BlueprintStepHolder> phase = phases.get(currentPhase);
         if (phase == null) {
+            System.out.println("allocateBlueprintStep: Current phase=" + currentPhase + " - no more phases");
             this.allPhasesDone = true;
             return null;
         }
@@ -152,6 +157,9 @@ public class Blueprint extends Module {
         double minimumDistance = Double.MAX_VALUE;
         BlueprintStepHolder selectedStep = null;
         for (BlueprintStepHolder stepHolder : phase) {
+            if (stepHolder.state != BlueprintStepHolder.STEP_DONE) {
+                isCurrentPhaseComplete = false;
+            }
             // Look for the nearest deployed step for this agent type
             if (stepHolder.state == BlueprintStepHolder.STEP_DEPLOYED &&
                 stepHolder.step.agentType.equals(agentType)) {
@@ -169,6 +177,8 @@ public class Blueprint extends Module {
         if (selectedStep != null) {
             selectedStep.state = BlueprintStepHolder.STEP_ALLOCATED;
             return selectedStep.step;
+        } else if (isCurrentPhaseComplete == true) {
+            currentPhase++;
         }
         return null;
     }
