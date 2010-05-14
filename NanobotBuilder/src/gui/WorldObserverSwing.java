@@ -28,7 +28,9 @@ public class WorldObserverSwing implements Observer {
     public void update(Observable o, Object arg) {
         Grid grid = (Grid) arg;
         panel.worldMap = grid.getNanobotPositionMap();
+        panel.weldMap = grid.getWeldPositionMap();
         panel.repaint();
+
     }
     JFrame myFrame;
     WorldPanel panel;
