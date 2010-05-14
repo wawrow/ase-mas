@@ -4,7 +4,7 @@ import com.agentfactory.logic.agent.Perceptor;
 import com.agentfactory.logic.lang.FOS;
 import service.WorldService;
 
-public class NanobotPerceptor extends Perceptor {
+public class WorldPerceptor extends Perceptor {
 
     public void perceive() {
         WorldService world = (WorldService)this.getService("world");

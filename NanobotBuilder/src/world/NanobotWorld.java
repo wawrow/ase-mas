@@ -41,7 +41,7 @@ public class NanobotWorld {
         System.out.println("World, putting weld in (" + x + "," + y + ") between (" +
                 endpointX1 + "," + endpointY1 + ") and (" + endpointX2 + "," + endpointY2 + ")");
         Weld weld = new Weld(WELD_NAME, endpointX1, endpointY1, endpointX2, endpointY2);
-        grid.addWeld(weld, x, y, endpointX1, endpointY1, endpointX2, endpointY2);
+        grid.addWeld(weld, x, y);
     }
 
     private AbstractNanobot createNanobot(String name) {

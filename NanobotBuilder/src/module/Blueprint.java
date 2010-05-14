@@ -57,7 +57,7 @@ public class Blueprint extends Module {
                         } else {
                             step = new Blueprint.BlueprintStepHolder(new BlueprintStep(
                                 stepId++, phaseId, nanobotType, st.nextToken(),
-                                st.nextToken(), "0", "0"));
+                                st.nextToken(), null, null));
                         }
 
                         List<Blueprint.BlueprintStepHolder> phase = phases.get(Integer.parseInt(phaseId));

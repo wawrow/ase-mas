@@ -5,7 +5,7 @@ import com.agentfactory.logic.lang.FOS;
 import module.Blueprint;
 import module.BlueprintStep;
  
-public class GetTask extends Actuator {
+public class GetTaskReceived extends Actuator {
     public boolean act(FOS action) {
         String blueprintName = action.argAt(0).toString();
         String agentName = action.argAt(1).toString();
@@ -20,12 +20,21 @@ public class GetTask extends Actuator {
                 Integer.parseInt(x), Integer.parseInt(y));
         if (step == null) {
             if (blueprint.isAllPhasesDone()) {
+            System.out.println("step is null, allTasksComplete");
                 adoptBelief("BELIEF(allTasksComplete(" + agentName + "))");
             } else {
+            System.out.println("step is null, taskUnavailable");
                 adoptBelief("BELIEF(taskUnavailable(" + agentName + "))");
             }
         } else {
-            adoptBelief("BELIEF(gotTask(" + agentName + "," + step.xPosition + "," + step.yPosition + "))");
+            if (step.xPosition2 != null) {
+                System.out.println("sending a welder task");
+                adoptBelief("BELIEF(gotTask(" + agentName + "," + step.xPosition + "," + step.yPosition +
+                        "," + step.xPosition2 + "," + step.yPosition2 + "))");
+            } else {
+                System.out.println("sending a nanobot task");
+                adoptBelief("BELIEF(gotTask(" + agentName + "," + step.xPosition + "," + step.yPosition + "))");
+            }
         }
         return true;
      }

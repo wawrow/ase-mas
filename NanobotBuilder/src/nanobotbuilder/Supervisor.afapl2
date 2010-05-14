@@ -1,15 +1,25 @@
 IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
 LOAD_MODULE blueprint module.Blueprint;
+LOAD_MODULE resources module.Resources;
 
 ONTOLOGY supervisor {
     PREDICATE state(?state);
     PREDICATE readTaskSuccessful(?agentType, ?taskId);
     PREDICATE readTaskEndOfFile(?state);
     PREDICATE readTaskWaiting(?state);
+    PREDICATE readResourcesSuccessful(?agentType, ?count);
+    PREDICATE readResourcesEndOfFile(?state);
     PREDICATE gotTask(?name, ?newX, ?newY);
+    PREDICATE gotTask(?name, ?x1, ?y1, ?x2, ?y2);
     PREDICATE taskUnavailable(?name);
     PREDICATE allTasksComplete(?name);
     PREDICATE stockManager(?name, ?addr);
+}
+
+ACTION readResources(?resourcesName) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.ReadResources;
 }
 
 ACTION readTask(?blueprintName) {
@@ -30,22 +40,43 @@ ACTION readTaskWaiting {
     CLASS actuator.ReadTaskWaiting;
 }
 
-ACTION getTask(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
+ACTION getTaskReceived(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
-    CLASS actuator.GetTask;
+    CLASS actuator.GetTaskReceived;
 }
 
-ACTION finishedTask(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
+ACTION finishedTaskReceived(?blueprintName, ?agentName, ?agentType, ?x, ?y) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
-    CLASS actuator.FinishedTask;
+    CLASS actuator.FinishedTaskReceived;
 }
 
-// Inital belief that we're reading blueprint
-BELIEF(state(readingBlueprint));
+// Action to move us from reading resources to reading the blueprint
+ACTION readResourcesEndOfFile {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
 
-// While the build is underway read the blueprint and ask the stockManager to deploy the required nanobots
+    CLASS actuator.ReadResourcesEndOfFile;
+}
+
+// Inital belief that we're reading resources
+BELIEF(state(readingResources));
+
+// Firt we read the required resources (welders) and ask the stock manager to deploy them
+BELIEF(state(readingResources)) &
+BELIEF(stockManager(?name, ?addr)) =>
+COMMIT(?self, ?now, BELIEF(true),
+    PAR(readResources(resources),
+        OR(
+            DO_WHEN(BELIEF(readResourcesSuccessful(?agentType, ?count)),
+                request(agentID(?name, ?addr), deployResources(?agentType, ?count))),
+            DO_WHEN(BELIEF(readResourcesEndOfFile(?state)), readResourcesEndOfFile)
+        )
+    )
+);
+
+// Keep reading the blueprint asking the stockManager to deploy the required nanobots as we go
 BELIEF(state(readingBlueprint)) &
 BELIEF(stockManager(?name, ?addr)) =>
 COMMIT(?self, ?now, BELIEF(true),
@@ -62,9 +93,10 @@ COMMIT(?self, ?now, BELIEF(true),
 // A nanobot agent has asked for a task
 BELIEF(fipaMessage(request, sender(?name, ?addr), getTask(?agentType, ?x, ?y))) =>
 COMMIT(?self, ?now, BELIEF(true),
-    PAR(getTask(blueprint, ?name, ?agentType, ?x, ?y),
+    PAR(getTaskReceived(blueprint, ?name, ?agentType, ?x, ?y),
         OR(
-            DO_WHEN(BELIEF(gotTask(?name, ?newX, ?newY)), request(agentID(?name, ?addr), task(?newX, ?newY))),
+            DO_WHEN(BELIEF(gotTask(?name, ?newX, ?newY)), request(agentID(?name, ?addr), nanobotTask(?newX, ?newY))),
+            DO_WHEN(BELIEF(gotTask(?name, ?x1, ?y1, ?x2, ?y2)), request(agentID(?name, ?addr), welderTask(?x1, ?y1, ?x2, ?y2))),
             DO_WHEN(BELIEF(taskUnavailable(?name)), request(agentID(?name, ?addr), taskUnavailable)),
             DO_WHEN(BELIEF(allTasksComplete(?name)), request(agentID(?name, ?addr), allTasksComplete))
         )
@@ -74,6 +106,6 @@ COMMIT(?self, ?now, BELIEF(true),
 // A nanobot agent has finished its task
 BELIEF(fipaMessage(request, sender(?name, ?addr), finishedTask(?agentType, ?x, ?y))) =>
 COMMIT(?self, ?now, BELIEF(true), 
-    SEQ(finishedTask(blueprint, ?name, ?agentType, ?x, ?y),
+    SEQ(finishedTaskReceived(blueprint, ?name, ?agentType, ?x, ?y),
         request(agentID(?name, ?addr), finishedAcknowledged)));
 

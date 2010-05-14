@@ -11,7 +11,7 @@ public class Revisited extends Actuator {
         adoptBelief("BELIEF(revisitedCount(" + currentRevisitedCount + "))");
 
         if (currentRevisitedCount >= maxRevisitedCount) {
-            System.out.println("Warning: Target appears to be unreachable " + currentRevisitedCount);
+            System.out.println("Warning: Target appears to be unreachable for " + this.getAgentName() + " " + currentRevisitedCount);
         }
         return true;
     }

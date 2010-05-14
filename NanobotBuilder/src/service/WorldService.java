@@ -36,6 +36,10 @@ public class WorldService extends AbstractPlatformService {
         return nanobotWorld.move(agent.getName(), target);
     }
 
+    public void addWeld(int x, int y, int endpointX1, int endpointY1, int endpointX2, int endpointY2) {
+        nanobotWorld.addWeld(x, y, endpointX1, endpointY1, endpointX2, endpointY2);
+    }
+
     @Override
     public void onUnbind(IAgent agent) {
     }

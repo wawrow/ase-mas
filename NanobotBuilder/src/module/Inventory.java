@@ -3,8 +3,6 @@ package module;
 import com.agentfactory.logic.agent.Module;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.StringTokenizer;
-import java.io.*;
 
 public class Inventory extends Module {
 
@@ -14,35 +12,20 @@ public class Inventory extends Module {
     @Override
     public void init() {
         System.out.println("Loading inventory");
-        try {
-            File file = new File(INVENTORY_FILENAME);
-            if (file.exists()) {
-                BufferedReader br = new BufferedReader(new FileReader(file));
-                try {
-                    String line = null;
-                    while((line = br.readLine()) != null) {
-                        StringTokenizer st = new StringTokenizer(line,",");
-                        String nanobotType = st.nextToken();
-                        String nanobotCount = st.nextToken();
-                        Integer currentCount = inventoryMap.get(nanobotType);
-                        if (currentCount != null) {
-                            inventoryMap.put(nanobotType, currentCount + Integer.parseInt(nanobotCount));
-                        } else {
-                            inventoryMap.put(nanobotType, Integer.parseInt(nanobotCount));
-                        }
-                    }
-                } finally {
-                    br.close();
-                }
-            } else {
-                System.out.println("Could not find inventory file " + INVENTORY_FILENAME);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ConfigFileHelper.read(INVENTORY_FILENAME, inventoryMap);
     }
     
-    public void decrement(String nanobotType) {
-        inventoryMap.put(nanobotType, inventoryMap.get(nanobotType) - 1);
+    public boolean decrement(String nanobotType) {
+        Integer count = inventoryMap.get(nanobotType);
+        if (count != null) {
+            if (count > 0 ) {
+                inventoryMap.put(nanobotType, count - 1);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
