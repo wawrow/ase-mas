@@ -21,7 +21,7 @@ ACTION makeWeldAcknowledged {
 }
 
 // If we are given a task we persist it (with an actuator)
-BELIEF(fipaMessage(request, sender(?name, ?addr), welderTask(?x1, ?y1, ?x2, y2))) =>
+BELIEF(fipaMessage(request, sender(?name, ?addr), welderTask(?x1, ?y1, ?x2, ?y2))) =>
 COMMIT(?self, ?now, BELIEF(true), gotWelderTask(?name, ?x1, ?y1, ?x2, ?y2));
 
 // If we have an allocated task and we are at our target then we make the weld
