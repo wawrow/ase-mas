@@ -20,9 +20,14 @@ public class Grid extends Observable {
 
     private GridCell[][] grid;
     private Map<AbstractNanobot, GridCell> nanobotPositionMap = new HashMap<AbstractNanobot, GridCell>();
+    private Map<AbstractObject, GridCell> weldPositionMap = new HashMap<AbstractObject, GridCell>();
 
     public Map<AbstractNanobot, GridCell> getNanobotPositionMap(){
         return nanobotPositionMap;
+    }
+    
+    public Map<AbstractObject, GridCell> getWeldPositionMap(){
+        return weldPositionMap;
     }
 
     private int width;
@@ -47,7 +52,7 @@ public class Grid extends Observable {
             return false;
         }
         gridCell.setWeld(weld);
-
+        weldPositionMap.put(weld, gridCell);
         setChanged();
         notifyObservers(this);
         return true;
