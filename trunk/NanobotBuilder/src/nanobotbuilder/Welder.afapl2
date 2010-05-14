@@ -34,7 +34,8 @@ BELIEF(agentType(?type)) &
 BELIEF(position(?targetX, ?targetY)) =>
 COMMIT(?self, ?now, BELIEF(true), 
     SEQ(makeWeld(?targetX, ?targetY, ?x1, ?y1, ?x2, ?y2),
-        request(agentID(?name, ?addr), finishedTask(?type, ?x1, ?y1))
+        request(agentID(?name, ?addr), finishedTask(?type, ?x1, ?y1)),
+        DELAY(iteration(5))
     )
 );
 

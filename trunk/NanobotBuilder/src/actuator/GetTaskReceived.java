@@ -20,10 +20,10 @@ public class GetTaskReceived extends Actuator {
                 Integer.parseInt(x), Integer.parseInt(y));
         if (step == null) {
             if (blueprint.isAllPhasesDone()) {
-            System.out.println("step is null, allTasksComplete");
+                System.out.println("step is null, allTasksComplete");
                 adoptBelief("BELIEF(allTasksComplete(" + agentName + "))");
             } else {
-            System.out.println("step is null, taskUnavailable");
+                System.out.println("step is null, taskUnavailable");
                 adoptBelief("BELIEF(taskUnavailable(" + agentName + "))");
             }
         } else {

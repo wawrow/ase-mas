@@ -63,7 +63,7 @@ ACTION readResourcesEndOfFile {
 // Inital belief that we're reading resources
 BELIEF(state(readingResources));
 
-// Firt we read the required resources (welders) and ask the stock manager to deploy them
+// First we read the required resources (welders) and ask the stock manager to deploy them
 BELIEF(state(readingResources)) &
 BELIEF(stockManager(?name, ?addr)) =>
 COMMIT(?self, ?now, BELIEF(true),
