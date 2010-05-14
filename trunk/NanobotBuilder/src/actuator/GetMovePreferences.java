@@ -23,8 +23,12 @@ public class GetMovePreferences extends Actuator {
         System.out.println(agent.getName() + ": calculating move preferences from (" + x + "," + y + ") to target (" + targetX + "," + targetY + ")");
 
         ArrayList<String> preferences = new ArrayList<String>();
+        if (Math.abs(x - targetX) <= 1 &&
+            Math.abs(y - targetY) <= 1 ) {
+            adoptBelief("BELIEF(state(targetWithinOne)))");
+        }
+        
         if (targetX == x && targetY == y) {
-            adoptBelief("ALWAYS(BELIEF(state(finished)))");
             return true;
         } else if (targetX == x) {
             if (targetY > y) {

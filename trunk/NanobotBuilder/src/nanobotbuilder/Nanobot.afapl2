@@ -1,161 +1,35 @@
-IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
-IMPORT com.agentfactory.afapl2.core.agent.ServiceSupport;
+IMPORT nanobotbuilder.Common;
 
-ONTOLOGY nanobot {
-    PREDICATE agentType(?type);
-    PREDICATE supervisor(?name, ?address);
-    PREDICATE state(?state);
-    PREDICATE gotTask(?name, ?newX, ?newY);
-    PREDICATE taskUnavailable(?name);
-    PREDICATE allTasksComplete(?name);
-    PREDICATE position(?x, ?y);
-    PREDICATE visited(?x, ?y);
-    PREDICATE revisitedCount(?count);
-    PREDICATE maxRevisitedCount(?count);
-    PREDICATE movePreferences(?first, ?second, ?third, ?fourth);
-}
-
-PERCEPTOR nanobotPerceptor {
-    CLASS perceptor.NanobotPerceptor;
-}
-
-ACTION needTask {
+ACTION gotNanobotTask(?name, ?x, ?y) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
-    CLASS actuator.NeedTask;
+    CLASS actuator.GotNanobotTask;
 }
-
-ACTION gotTask(?name, ?x, ?y) {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.GotTask;
-}
-
-ACTION finishedAcknowledged(?name) {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.FinishedAcknowledged;
-}
-
-ACTION getMovePreferences(?x, ?y, ?targetX, ?targetY) {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.GetMovePreferences;
-}
-
-ACTION move(?target) {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.Move;
-}
-
-ACTION visited(?x, ?y) {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.Visited;
-}
-
-ACTION revisited(?count, ?maxCount) {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.Revisited;
-}
-
-ACTION moveComplete {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.MoveComplete;
-}
-
-ACTION moveNotMade {
-    PRECONDITION BELIEF(true);
-    POSTCONDITION BELIEF(true);
-    CLASS actuator.MoveNotMade;
-}
-
-// Bind to the world service
-COMMIT(?self, ?now, BELIEF(true), bindToService(world));
-
-// Initial state
-BELIEF(state(needTask));
-ALWAYS(BELIEF(maxRevisitedCount(20)));
-
-// Persist our needing a task until we've got a position in the world
-BELIEF(state(needTask)) & !BELIEF(position(?x, ?y)) =>
-COMMIT(?self, ?now, BELIEF(true), needTask);
-
-// If we need a task then we ask for one
-BELIEF(state(needTask)) &
-BELIEF(supervisor(?name, ?addr)) &
-BELIEF(position(?x, ?y)) &
-BELIEF(agentType(?type)) =>
-COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));
 
 // If we are given a task we persist it (with an actuator)
-BELIEF(fipaMessage(request, sender(?name, ?addr), task(?x, ?y))) =>
-COMMIT(?self, ?now, BELIEF(true), gotTask(?name, ?x, ?y));
-
-// If we are told there are no tasks left then we are finished
-BELIEF(fipaMessage(request, sender(?name, ?addr), allTasksComplete)) =>
-COMMIT(?self, ?now, BELIEF(true), finishedAcknowledged(?name));
-
-// If we are told there is no task available, we commit to asking again
-BELIEF(fipaMessage(request, sender(?name, ?addr), taskUnavailable)) &
-BELIEF(position(?x, ?y)) &
-BELIEF(agentType(?type)) =>
-COMMIT(?self, ?now, BELIEF(true), 
-    SEQ(DELAY(iteration(5)),
-        request(agentID(?name, ?addr), getTask(?type, ?x, ?y))));
+BELIEF(fipaMessage(request, sender(?name, ?addr), nanobotTask(?x, ?y))) =>
+COMMIT(?self, ?now, BELIEF(true), gotNanobotTask(?name, ?x, ?y));
 
 // If we have an allocated task and we are at our target then we are finished
-BELIEF(state(allocated(?targetX, ?targetY))) &
+BELIEF(state(target(?targetX, ?targetY))) &
 BELIEF(supervisor(?name, ?addr)) &
 !BELIEF(state(finishedAcknowledged)) &
 BELIEF(agentType(?type)) &
 BELIEF(position(?targetX, ?targetY)) =>
-COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), finishedTask(?type, ?targetX, ?targetY)));
+COMMIT(?self, ?now, BELIEF(true),
+    SEQ(finishedTask,
+        request(agentID(?name, ?addr), finishedTask(?type, ?targetX, ?targetY))
+    )
+);
 
 // If we get the finished acknowledged message from supervisor then we can stop
 BELIEF(fipaMessage(request, sender(?name, ?addr), finishedAcknowledged)) =>
 COMMIT(?self, ?now, BELIEF(true), finishedAcknowledged(?name));
 
 // If we have an allocated task then get our preferences for the next move
-BELIEF(state(allocated(?targetX, ?targetY))) &
+BELIEF(state(target(?targetX, ?targetY))) &
 BELIEF(position(?x, ?y)) &
 !BELIEF(state(finished)) &
 !BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) =>
 COMMIT(?self, ?now, BELIEF(true), getMovePreferences(?x, ?y, ?targetX, ?targetY));
-
-// Persist record of any square visited
-BELIEF(position(?x, ?y)) &
-!BELIEF(visited(?x, ?y)) &
-!BELIEF(state(finished)) =>
-COMMIT(?self, ?now, BELIEF(true), visited(?x, ?y));
-
-// Keep track of how many consecutive moves are just revisiting an old square
-BELIEF(position(?x, ?y)) &
-BELIEF(visited(?x, ?y)) &
-BELIEF(revisitedCount(?count)) &
-BELIEF(maxRevisitedCount(?maxCount)) &
-!BELIEF(state(finished)) =>
-COMMIT(?self, ?now, BELIEF(true), revisited(?count, ?maxCount));
-
-// If we have move preferences then choose one based on what's possible
-BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) &
-!BELIEF(state(finished)) =>
-COMMIT(?self, ?now, BELIEF(true),
-    ATTEMPT(move(?first),
-            moveComplete,
-            ATTEMPT(move(?second),
-                    moveComplete,
-                    ATTEMPT(move(?third),
-                            moveComplete,
-                            ATTEMPT(move(?fourth),
-                                moveComplete,
-                                moveNotMade
-                            )
-                    )
-            )
-    )
-);
 

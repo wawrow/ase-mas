@@ -1,0 +1,51 @@
+IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
+IMPORT com.agentfactory.afapl2.core.agent.ServiceSupport;
+IMPORT nanobotbuilder.Common;
+
+ACTION gotWelderTask(?name, ?x1, ?y1, ?x2, ?y2) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.GotWelderTask;
+}
+
+ACTION makeWeld(?targetX, ?targetY, ?x1, ?y1, ?x2, ?y2) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.GotWelderTask;
+}
+
+ACTION makeWeldAcknowledged {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.MakeWeldAcknowledged;
+}
+
+// If we are given a task we persist it (with an actuator)
+BELIEF(fipaMessage(request, sender(?name, ?addr), welderTask(?x1, ?y1, ?x2, y2))) =>
+COMMIT(?self, ?now, BELIEF(true), gotWelderTask(?name, ?x1, ?y1, ?x2, ?y2));
+
+// If we have an allocated task and we are at our target then we make the weld
+BELIEF(state(target(?targetX, ?targetY))) &
+BELIEF(state(weldEndpoints(?x1, ?y1, ?x2, ?y2))) &
+BELIEF(supervisor(?name, ?addr)) &
+!BELIEF(state(finishedAcknowledged)) &
+!BELIEF(state(needTask)) &
+BELIEF(agentType(?type)) &
+BELIEF(position(?targetX, ?targetY)) =>
+COMMIT(?self, ?now, BELIEF(true), 
+    SEQ(makeWeld(?targetX, ?targetY, ?x1, ?y1, ?x2, ?y2),
+        request(agentID(?name, ?addr), finishedTask(?type, ?x1, ?y1))
+    )
+);
+
+// If we get the finished acknowledged message from supervisor then we can stop
+BELIEF(fipaMessage(request, sender(?name, ?addr), finishedAcknowledged)) =>
+COMMIT(?self, ?now, BELIEF(true), makeWeldAcknowledged);
+
+// If we have a destination target then get our preferences for the next move
+BELIEF(state(target(?targetX, ?targetY))) &
+BELIEF(position(?x, ?y)) &
+!BELIEF(state(finished)) &
+!BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) =>
+COMMIT(?self, ?now, BELIEF(true), getMovePreferences(?x, ?y, ?targetX, ?targetY));
+

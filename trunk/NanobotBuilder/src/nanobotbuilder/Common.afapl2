@@ -1,0 +1,144 @@
+IMPORT com.agentfactory.afapl2.core.agent.FIPACore;
+IMPORT com.agentfactory.afapl2.core.agent.ServiceSupport;
+
+ONTOLOGY common {
+    PREDICATE agentType(?type);
+    PREDICATE supervisor(?name, ?address);
+    PREDICATE state(?state);
+    PREDICATE gotTask(?name, ?newX, ?newY);
+    PREDICATE taskUnavailable(?name);
+    PREDICATE allTasksComplete(?name);
+    PREDICATE position(?x, ?y);
+    PREDICATE visited(?x, ?y);
+    PREDICATE revisitedCount(?count);
+    PREDICATE maxRevisitedCount(?count);
+    PREDICATE movePreferences(?first, ?second, ?third, ?fourth);
+}
+
+PERCEPTOR worldPerceptor {
+    CLASS perceptor.WorldPerceptor;
+}
+
+ACTION needTask {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.NeedTask;
+}
+
+ACTION getMovePreferences(?x, ?y, ?targetX, ?targetY) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.GetMovePreferences;
+}
+
+ACTION move(?target) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.Move;
+}
+
+ACTION visited(?x, ?y) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.Visited;
+}
+
+ACTION revisited(?count, ?maxCount) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.Revisited;
+}
+
+ACTION moveComplete {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.MoveComplete;
+}
+
+ACTION moveNotMade {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.MoveNotMade;
+}
+
+ACTION finishedTask {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.FinishedTask;
+}
+
+ACTION finishedAcknowledged(?name) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.FinishedAcknowledged;
+}
+
+// Bind to the world service
+COMMIT(?self, ?now, BELIEF(true), bindToService(world));
+
+// Initial state
+BELIEF(state(needTask));
+ALWAYS(BELIEF(maxRevisitedCount(20)));
+
+// Persist our needing a task until we've got a position in the world
+BELIEF(state(needTask)) & !BELIEF(position(?x, ?y)) =>
+COMMIT(?self, ?now, BELIEF(true), needTask);
+
+// If we need a task then we ask for one
+BELIEF(state(needTask)) &
+BELIEF(supervisor(?name, ?addr)) &
+BELIEF(position(?x, ?y)) &
+BELIEF(agentType(?type)) =>
+COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, ?x, ?y)));
+
+// If we are told there are no tasks left then we are finished
+BELIEF(fipaMessage(request, sender(?name, ?addr), allTasksComplete)) =>
+COMMIT(?self, ?now, BELIEF(true),
+    SEQ(finishedTask,
+        finishedAcknowledged(?name)
+    )
+);
+
+// If we are told there is no task available, we commit to asking again
+BELIEF(fipaMessage(request, sender(?name, ?addr), taskUnavailable)) &
+BELIEF(position(?x, ?y)) &
+BELIEF(agentType(?type)) =>
+COMMIT(?self, ?now, BELIEF(true),
+    SEQ(DELAY(iteration(5)),
+        request(agentID(?name, ?addr), getTask(?type, ?x, ?y))));
+
+// Persist record of any square visited
+BELIEF(position(?x, ?y)) &
+!BELIEF(visited(?x, ?y)) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true), visited(?x, ?y));
+
+// Keep track of how many consecutive moves are just revisiting an old square
+BELIEF(position(?x, ?y)) &
+BELIEF(visited(?x, ?y)) &
+BELIEF(revisitedCount(?count)) &
+BELIEF(maxRevisitedCount(?maxCount)) &
+BELIEF(state(target(?targetX, ?targetY))) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true), revisited(?count, ?maxCount));
+
+// If we have move preferences then choose one based on what's possible
+BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true),
+    ATTEMPT(move(?first),
+            moveComplete,
+            ATTEMPT(move(?second),
+                    moveComplete,
+                    ATTEMPT(move(?third),
+                            moveComplete,
+                            ATTEMPT(move(?fourth),
+                                moveComplete,
+                                moveNotMade
+                            )
+                    )
+            )
+    )
+);
+
+
