@@ -11,7 +11,7 @@ ACTION gotWelderTask(?name, ?x1, ?y1, ?x2, ?y2) {
 ACTION makeWeld(?targetX, ?targetY, ?x1, ?y1, ?x2, ?y2) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
-    CLASS actuator.GotWelderTask;
+    CLASS actuator.MakeWeld;
 }
 
 ACTION makeWeldAcknowledged {
@@ -28,7 +28,7 @@ COMMIT(?self, ?now, BELIEF(true), gotWelderTask(?name, ?x1, ?y1, ?x2, ?y2));
 BELIEF(state(target(?targetX, ?targetY))) &
 BELIEF(state(weldEndpoints(?x1, ?y1, ?x2, ?y2))) &
 BELIEF(supervisor(?name, ?addr)) &
-!BELIEF(state(finishedAcknowledged)) &
+!BELIEF(state(finishedBuilding)) &
 !BELIEF(state(needTask)) &
 BELIEF(agentType(?type)) &
 BELIEF(position(?targetX, ?targetY)) =>
@@ -44,8 +44,27 @@ COMMIT(?self, ?now, BELIEF(true), makeWeldAcknowledged);
 
 // If we have a destination target then get our preferences for the next move
 BELIEF(state(target(?targetX, ?targetY))) &
+!BELIEF(position(?targetX, ?targetY)) &
 BELIEF(position(?x, ?y)) &
 !BELIEF(state(finished)) &
 !BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) =>
 COMMIT(?self, ?now, BELIEF(true), getMovePreferences(?x, ?y, ?targetX, ?targetY));
 
+// If we have move preferences then choose one based on what's possible
+BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true),
+    ATTEMPT(move(?first),
+            moveComplete,
+            ATTEMPT(move(?second),
+                    moveComplete,
+                    ATTEMPT(move(?third),
+                            moveComplete,
+                            ATTEMPT(move(?fourth),
+                                moveComplete,
+                                moveNotMade
+                            )
+                    )
+            )
+    )
+);

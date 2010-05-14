@@ -24,6 +24,6 @@ public class Weld extends AbstractObject {
     }
 
     public int getType() {
-        return 0;
+        return -1;
     }
 }

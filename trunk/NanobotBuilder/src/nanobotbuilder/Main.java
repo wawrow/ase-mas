@@ -35,7 +35,7 @@ public class Main {
         // whose source code is identified by a .agent extension)
         AFAPL2ArchitectureFactory factory = new AFAPL2ArchitectureFactory();
         Properties props = new Properties();
-        props.setProperty("TIMESLICE", "25");
+        props.setProperty("TIMESLICE", "5");
         factory.configure(props);
         platform.getArchitectureService().registerArchitectureFactory(factory);
 

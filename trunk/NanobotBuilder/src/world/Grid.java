@@ -42,10 +42,11 @@ public class Grid extends Observable {
     public boolean addWeld(Weld weld, int x, int y) {
 
         GridCell gridCell = grid[x][y];
-        if (gridCell.isOccupied()) {
+        if (gridCell.isWeld()) {
+            System.out.println("could not add weld, cell already has weld");
             return false;
         }
-        gridCell.setOccupant(weld, this);
+        gridCell.setWeld(weld);
 
         setChanged();
         notifyObservers(this);
@@ -98,7 +99,9 @@ public class Grid extends Observable {
             GridCell cell = grid[x][y];
             if (cell.isOccupied()) {
                 percepts.add(new FOS("blocked(" + neighbourLabel + ")"));
-                if (cell.getOccupant().isFinished()) {
+                if (cell.isWeld()) {
+                    percepts.add(new FOS("weld(" + neighbourLabel + ")"));
+                } else if (cell.getOccupant().isFinished()) {
                     percepts.add(new FOS("staticNanobot(" + neighbourLabel + ")"));
                 } else {
                     percepts.add(new FOS("movingNanobot(" + neighbourLabel + ")"));

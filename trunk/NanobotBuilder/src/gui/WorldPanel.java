@@ -34,6 +34,9 @@ public class WorldPanel extends JPanel {
         if (worldMap != null) {
             for (AbstractNanobot anb : worldMap.keySet()) {
                 switch (anb.getType()) {
+                    case 0:
+                        g2d.setPaint(Color.DARK_GRAY);
+                        break;
                     case 1:
                         g2d.setPaint(Color.RED);
                         break;

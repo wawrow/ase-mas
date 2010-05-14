@@ -35,7 +35,7 @@ public class WorldObserverSwing implements Observer {
 
     public void Start() throws IOException {
         panel = new WorldPanel();
-        myFrame = new JFrame("My Test");
+        myFrame = new JFrame("Nanobot World");
         myFrame.setContentPane(panel);
         myFrame.pack();
         myFrame.setVisible(true);

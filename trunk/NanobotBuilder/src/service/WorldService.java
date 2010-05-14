@@ -22,6 +22,7 @@ public class WorldService extends AbstractPlatformService {
                 " type=" + agent.getType() + " agentId=" + agent.getAgentID().getName() + " fipaString=" + agent.getAgentID().toFIPAString() +
                 " FOSString" + agent.getAgentID().toFOSString() + " serviceDescriptions=" + agent.getAgentID().getServiceDescriptionss().toString() );
         nanobotWorld.addNanobot(agent.getName());
+
     }
 
     public List<FOS> getPercepts(IAgent agent) {
@@ -36,8 +37,8 @@ public class WorldService extends AbstractPlatformService {
         return nanobotWorld.move(agent.getName(), target);
     }
 
-    public void addWeld(int x, int y, int endpointX1, int endpointY1, int endpointX2, int endpointY2) {
-        nanobotWorld.addWeld(x, y, endpointX1, endpointY1, endpointX2, endpointY2);
+    public void addWeld(IAgent agent, int x, int y, int endpointX1, int endpointY1, int endpointX2, int endpointY2) {
+        nanobotWorld.addWeld(agent.getName(), x, y, endpointX1, endpointY1, endpointX2, endpointY2);
     }
 
     @Override
