@@ -61,16 +61,16 @@ ACTION moveNotMade {
     CLASS actuator.MoveNotMade;
 }
 
-ACTION finishedTask {
+ACTION finishedTask(?name) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
     CLASS actuator.FinishedTask;
 }
 
-ACTION finishedAcknowledged(?name) {
+ACTION finishedBuilding(?name) {
     PRECONDITION BELIEF(true);
     POSTCONDITION BELIEF(true);
-    CLASS actuator.FinishedAcknowledged;
+    CLASS actuator.FinishedBuilding;
 }
 
 // Bind to the world service
@@ -94,8 +94,8 @@ COMMIT(?self, ?now, BELIEF(true), request(agentID(?name, ?addr), getTask(?type, 
 // If we are told there are no tasks left then we are finished
 BELIEF(fipaMessage(request, sender(?name, ?addr), allTasksComplete)) =>
 COMMIT(?self, ?now, BELIEF(true),
-    SEQ(finishedTask,
-        finishedAcknowledged(?name)
+    SEQ(finishedTask(?name),
+        finishedBuilding(?name)
     )
 );
 
@@ -106,39 +106,3 @@ BELIEF(agentType(?type)) =>
 COMMIT(?self, ?now, BELIEF(true),
     SEQ(DELAY(iteration(5)),
         request(agentID(?name, ?addr), getTask(?type, ?x, ?y))));
-
-// Persist record of any square visited
-BELIEF(position(?x, ?y)) &
-!BELIEF(visited(?x, ?y)) &
-!BELIEF(state(finished)) =>
-COMMIT(?self, ?now, BELIEF(true), visited(?x, ?y));
-
-// Keep track of how many consecutive moves are just revisiting an old square
-BELIEF(position(?x, ?y)) &
-BELIEF(visited(?x, ?y)) &
-BELIEF(revisitedCount(?count)) &
-BELIEF(maxRevisitedCount(?maxCount)) &
-BELIEF(state(target(?targetX, ?targetY))) &
-!BELIEF(state(finished)) =>
-COMMIT(?self, ?now, BELIEF(true), revisited(?count, ?maxCount));
-
-// If we have move preferences then choose one based on what's possible
-BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) &
-!BELIEF(state(finished)) =>
-COMMIT(?self, ?now, BELIEF(true),
-    ATTEMPT(move(?first),
-            moveComplete,
-            ATTEMPT(move(?second),
-                    moveComplete,
-                    ATTEMPT(move(?third),
-                            moveComplete,
-                            ATTEMPT(move(?fourth),
-                                moveComplete,
-                                moveNotMade
-                            )
-                    )
-            )
-    )
-);
-
-

@@ -9,6 +9,7 @@ import java.util.StringTokenizer;
 
 public class NanobotWorld {
 
+    public static final String WELDER_TYPE = "0";
     public static final String NANOBOT_TYPE1 = "1";
     public static final String NANOBOT_TYPE2 = "2";
     public static final String NANOBOT_TYPE3 = "3";
@@ -37,7 +38,7 @@ public class NanobotWorld {
         grid.addNanobot(nanobot);
     }
 
-    public void addWeld(int x, int y, int endpointX1, int endpointY1, int endpointX2, int endpointY2) {
+    public void addWeld(String name, int x, int y, int endpointX1, int endpointY1, int endpointX2, int endpointY2) {
         System.out.println("World, putting weld in (" + x + "," + y + ") between (" +
                 endpointX1 + "," + endpointY1 + ") and (" + endpointX2 + "," + endpointY2 + ")");
         Weld weld = new Weld(WELD_NAME, endpointX1, endpointY1, endpointX2, endpointY2);
@@ -48,8 +49,10 @@ public class NanobotWorld {
         StringTokenizer st = new StringTokenizer(name, "#");
         String type = st.nextToken();
 
-        if (type.equals(NANOBOT_TYPE1)) {
-            return new NanobotType1(name);
+        if (type.equals(WELDER_TYPE)) {
+            return new Welder(name);
+        } else if (type.equals(NANOBOT_TYPE1)) {
+            return new NanobotType2(name);
         } else if (type.equals(NANOBOT_TYPE2)) {
             return new NanobotType2(name);
         } else if (type.equals(NANOBOT_TYPE3)) {

@@ -16,8 +16,7 @@ public class GotWelderTask extends Actuator {
         Integer targetX = (Integer.parseInt(x1) + Integer.parseInt(x2)) / 2;
         Integer targetY = (Integer.parseInt(y1) + Integer.parseInt(y2)) / 2;
 
-        retractBelief("ALWAYS(BELIEF(state(target(?x, ?y))))");
-        retractBelief("ALWAYS(BELIEF(state(weldEndpoints(?x1, ?y1, ?x2, ?y2))))");
+        retractBelief("ALWAYS(BELIEF(state(target(0,30))))");
         adoptBelief("ALWAYS(BELIEF(state(target(" + targetX + "," + targetY + "))))");
         adoptBelief("ALWAYS(BELIEF(state(weldEndpoints(" + x1 + "," + y1 + "," + x2 + "," + y2 + "))))");
         return true;
