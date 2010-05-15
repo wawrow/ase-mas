@@ -2,6 +2,7 @@ package actuator;
 
 import com.agentfactory.logic.agent.Actuator;
 import com.agentfactory.logic.lang.FOS;
+import com.agentfactory.platform.core.AgentCreationException;
 import com.agentfactory.service.ams.AgentManagementService;
 import com.agentfactory.platform.core.IAgent;
 import com.agentfactory.platform.core.NoSuchArchitectureException;
@@ -36,9 +37,9 @@ public class DeployNanobot extends Actuator {
                 newAgent.initialise("ALWAYS(BELIEF(supervisor(" + supervisorName + ", " + supervisorAddress + ")))");
                 newAgent.initialise("ALWAYS(BELIEF(agentType(" + agentType + ")))");
                 newAgent.execute();
-
             } catch (NoSuchArchitectureException ex) {
             } catch (DuplicateAgentNameException ex) {
+            } catch (AgentCreationException ex){
             }
         }
         adoptBelief("BELIEF(nanobotAllocated(true))");
