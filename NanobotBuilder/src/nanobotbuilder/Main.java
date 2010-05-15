@@ -3,6 +3,8 @@ package nanobotbuilder;
 import com.agentfactory.afapl2.interpreter.AFAPL2ArchitectureFactory;
 //import com.agentfactory.agentspotter.AgentSpotter;
 //import com.agentfactory.platform.core.AgentCreationException;
+import com.agentfactory.agentspotter.AgentSpotter;
+import com.agentfactory.platform.core.AgentCreationException;
 import com.agentfactory.platform.core.DuplicateAgentNameException;
 import com.agentfactory.platform.core.IAgent;
 import com.agentfactory.platform.core.NoSuchArchitectureException;
@@ -35,7 +37,7 @@ public class Main {
         // whose source code is identified by a .agent extension)
         AFAPL2ArchitectureFactory factory = new AFAPL2ArchitectureFactory();
         Properties props = new Properties();
-        props.setProperty("TIMESLICE", "5");
+        props.setProperty("TIMESLICE", "100");
         factory.configure(props);
         platform.getArchitectureService().registerArchitectureFactory(factory);
 
@@ -54,13 +56,13 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-//        AgentSpotter profiler = new AgentSpotter(platform);
-//        profiler.start();
+        AgentSpotter profiler = new AgentSpotter(platform);
+        profiler.start();
 
         // Install and start the Agent Factory Debugger
         //Debugger debugger = new Debugger(platform);// new Debugger();
-        Debugger debugger = new Debugger();
-        debugger.init(new HashMap<String, String>(), platform);
+        Debugger debugger = new Debugger(platform);
+        //debugger.init(new HashMap<String, String>(), platform);
         debugger.start();
         
         // Get a reference to the Agent Management Service so that the default
@@ -81,6 +83,8 @@ public class Main {
         } catch (NoSuchArchitectureException ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         } catch (DuplicateAgentNameException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (AgentCreationException ex){
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 //        catch (AgentCreationException ex){
