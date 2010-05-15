@@ -1,0 +1,69 @@
+IMPORT nanobotbuilder.Common;
+
+ACTION gotNanobotTask(?name, ?x, ?y) {
+    PRECONDITION BELIEF(true);
+    POSTCONDITION BELIEF(true);
+    CLASS actuator.GotNanobotTask;
+}
+
+// If we are given a task we persist it (with an actuator)
+BELIEF(fipaMessage(request, sender(?name, ?addr), nanobotTask(?x, ?y))) =>
+COMMIT(?self, ?now, BELIEF(true), gotNanobotTask(?name, ?x, ?y));
+
+// If we have an allocated task and we are at our target then we are finished
+BELIEF(state(target(?targetX, ?targetY))) &
+BELIEF(supervisor(?name, ?addr)) &
+!BELIEF(state(finished)) &
+BELIEF(agentType(?type)) &
+BELIEF(position(?targetX, ?targetY)) =>
+COMMIT(?self, ?now, BELIEF(true),
+    SEQ(finishedTask(?name),
+        request(agentID(?name, ?addr), finishedTask(?type, ?targetX, ?targetY)),
+        DELAY(iteration(5))
+    )
+);
+
+// If we get the finished acknowledged message from supervisor then we can stop
+BELIEF(fipaMessage(request, sender(?name, ?addr), finishedAcknowledged)) =>
+COMMIT(?self, ?now, BELIEF(true), finishedBuilding(?name));
+
+// Persist record of any square visited
+BELIEF(position(?x, ?y)) &
+!BELIEF(visited(?x, ?y)) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true), visited(?x, ?y));
+
+// Keep track of how many consecutive moves are just revisiting an old square
+BELIEF(position(?x, ?y)) &
+BELIEF(visited(?x, ?y)) &
+BELIEF(revisitedCount(?count)) &
+BELIEF(maxRevisitedCount(?maxCount)) &
+BELIEF(state(target(?targetX, ?targetY))) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true), revisited(?count, ?maxCount));
+
+// If we have an allocated task then get our preferences for the next move
+BELIEF(state(target(?targetX, ?targetY))) &
+BELIEF(position(?x, ?y)) &
+!BELIEF(state(finished)) &
+!BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) =>
+COMMIT(?self, ?now, BELIEF(true), getMovePreferences(?x, ?y, ?targetX, ?targetY));
+
+// If we have move preferences then choose one based on what's possible
+BELIEF(movePreferences(?first, ?second, ?third, ?fourth)) &
+!BELIEF(state(finished)) =>
+COMMIT(?self, ?now, BELIEF(true),
+    ATTEMPT(move(?first),
+            moveComplete,
+            ATTEMPT(move(?second),
+                    moveComplete,
+                    ATTEMPT(move(?third),
+                            moveComplete,
+                            ATTEMPT(move(?fourth),
+                                moveComplete,
+                                moveNotMade
+                            )
+                    )
+            )
+    )
+);
